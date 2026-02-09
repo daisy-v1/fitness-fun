@@ -1,0 +1,108 @@
+import HealthKit //using Apple's Healthkit framework
+
+final class HealthKitManager { //no other class can subclass Health Kit Manager
+    
+    static let shared = HealthKitManager() //only one instance exists across the app
+    
+    private let healthStore = HKHealthStore() //interface to HealthKit (read/write data)
+    
+    private init() {} //only one instance of HealthKitManager
+    
+    
+    func isHealthKitAvailable() -> Bool { //proceeds to app if HealthKit is supported on device
+        HKHealthStore.isHealthDataAvailable() //calls HealthKit interface to ask if there is data available; good for iPads that don't support HealthKit
+    }
+    
+    
+    func requestAuthorization(completion: @escaping (Bool, Error?) -> Void) { //requests user permission to read health data
+        
+        guard HKHealthStore.isHealthDataAvailable() else { //exits early if Healthkit is not available
+            completion(false, nil)
+            return
+        }
+        
+    
+        ///
+        guard //early exit
+            let stepType = HKObjectType.quantityType(forIdentifier: .stepCount), //defines types of data being read
+            let energyType = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)
+        else {
+            completion(false, nil)
+            return
+        }
+        
+        let readTypes: Set<HKObjectType> = [stepType, energyType] //asks Healthkit for READ permission
+        
+        healthStore.requestAuthorization(toShare: nil, read: readTypes) { success, error in
+            DispatchQueue.main.async {
+                completion(success, error)
+            }
+        }
+    }
+    
+    func fetchTodaySteps(completion: @escaping (Double) -> Void) { //reads today's step count from HealthKit using asynchronous query.
+        
+        guard let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount) else {
+            completion(0)
+            return
+        }
+        
+        let startOfDay = Calendar.current.startOfDay(for: Date()) //creates a predicate filter to filter only today's samples
+        let predicate = HKQuery.predicateForSamples(
+            withStart: startOfDay,
+            end: Date(),
+            options: .strictStartDate
+        )
+        
+        let query = HKStatisticsQuery( //Uses HKStatisticsQuery to sum up all steps today and calls completion with total steps on main UI
+            quantityType: stepType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, result, _ in
+            let steps = result?.sumQuantity()?.doubleValue(for: .count()) ?? 0
+            DispatchQueue.main.async {
+                completion(steps)
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    func fetchTodayCalories(completion: @escaping (Double) -> Void) { //fetches calories burned
+        guard let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) else {
+            completion(0)
+            return
+        }
+        
+        //defines date variable
+        let startOfDay = Calendar.current.startOfDay(for: Date())
+        
+        //only step samples that happened today
+        let predicate = HKQuery.predicateForSamples(
+            withStart: startOfDay,
+            end: Date(),
+            options: .strictStartDate
+        )
+        
+        //HealthKit function that gives total calories for only today
+        let query = HKStatisticsQuery(
+            quantityType: energyType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+            
+        ) { _, result, error in
+            if let error = error {
+                print("HealthKit error:", error)
+            }
+            
+            //converts to kilcal
+            let calories = result?.sumQuantity()?.doubleValue(for: .kilocalorie()) ?? 0
+            DispatchQueue.main.async {
+                completion(calories) //tells UI calories are done
+            }
+        }
+        
+        healthStore.execute(query) //todays query runs
+    }
+}
+//end HealthKitManager class
