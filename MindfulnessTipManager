@@ -1,0 +1,30 @@
+
+import Foundation //date, calendars
+import SwiftData //framework for working with data models and persistence
+
+@Model //SwiftData model. Can be queried like an entity
+final class Item { //no other class can inherit from Item
+    var timestamp: Date //stores a Date property for each Item instance
+    
+    init(timestamp: Date) { //sets timestamp when you create a new Item
+        self.timestamp = timestamp
+    }
+}
+
+
+final class MindfulnessTipManager {
+    
+    static let shared = MindfulnessTipManager() //singleton instance
+    
+    private init() {}
+    
+    private let tips = [ //strings of tips
+        "Take 5 slow, deep breaths and relax your shoulders.",
+        "Take a short walk and focus on your breathing.",
+    ]
+    
+    func tipOfTheDay() -> String { //gets current calendar and returns the day number of the year
+        let dayOfYear = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 0
+        return tips[dayOfYear % tips.count] //a different tip is returned each day from the array "private let tips"
+    }
+}
