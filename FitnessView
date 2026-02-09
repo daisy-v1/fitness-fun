@@ -1,0 +1,67 @@
+
+import SwiftUI
+
+//SwiftUI view called FitnessView
+struct FitnessView: View {
+    
+    //Steps and calories start at 0 and when the value changes re-draw the UI
+    @State private var steps: Int = 0
+    @State private var calories: Int = 0
+    
+    // 🌿 Mindfulness tip of the day, gets one string
+    private let tip = MindfulnessTipManager.shared.tipOfTheDay()
+    
+    
+    var body: some View {
+        
+        // ───────── Mindfulness Section ─────────, displays text
+        VStack(spacing: 10) {
+            Text("🌿 Mindfulness Tip of the Day")
+                .font(.headline)
+            
+            Text(tip)
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .padding()
+                .background(Color.green.opacity(0.15))
+                .cornerRadius(12)
+        }
+        .padding(.top, 10)
+        
+        
+        VStack(spacing: 20) {
+            
+            Text("Fitness App")
+                .font(.title)
+                .bold()
+            
+            //displays current step count, when steps changes this text updates automatically
+            Text("👣 Steps: \(steps)")
+                .font(.headline)
+            
+            Text("🔥 Calories: \(calories) kcal")
+                .font(.headline)
+            
+            
+                .padding()
+            //runs once when the view appears on screen
+                .onAppear {
+                    
+                    //request HealthKit permission
+                    HealthKitManager.shared.requestAuthorization { success, error in
+                        if success {
+                            HealthKitManager.shared.fetchTodaySteps { value in
+                                steps = Int(value)
+                            }
+                            
+                            HealthKitManager.shared.fetchTodayCalories { value in
+                                calories = Int(value)
+                            }
+                        } else {
+                            print(error?.localizedDescription ?? "HealthKit auth failed")
+                        }
+                    }
+                }
+        }
+    }
+}
