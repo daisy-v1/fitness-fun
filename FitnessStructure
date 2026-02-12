@@ -1,0 +1,42 @@
+import SwiftUI
+import SwiftData
+
+@main
+
+//entry point of app, defines app's main structure
+struct Fitness_AppApp: App {
+    
+    //SwiftData object that manages your app's db
+    var sharedModelContainer: ModelContainer = {
+        
+        //Schema object, defines Item.self which is a model that SwiftData should store
+        let schema = Schema([
+            
+            Item.self,
+        ])
+        
+        //config for how data should be stored: permanently to disk
+        let modelConfiguration =  ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+        do {
+            //attempts to create actual ModelContainer
+            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            
+            //if container creation fails the app crashes and prints an error message
+        } catch {
+            fatalError("Could not create ModelContainer: \(error)")
+        }
+    }()
+
+    //required property of the App protocol
+    var body: some Scene {
+        
+        //creates the main window of the app where the first View should go
+        WindowGroup {
+            FitnessView()
+
+        }
+        //injects ModelContainer into SwiftUI environment
+        .modelContainer(sharedModelContainer)
+    }
+}
