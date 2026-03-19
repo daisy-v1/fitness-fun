@@ -34,6 +34,7 @@ struct Fitness_AppApp: App {
         //creates the main window of the app where the first View should go
         WindowGroup {
             FitnessView()
+            HomeView()
 
         }
         //injects ModelContainer into SwiftUI environment
