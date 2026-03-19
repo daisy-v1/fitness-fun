@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVKit
 
 struct HomeView: View {
     var body: some View {
@@ -27,7 +28,19 @@ struct HomeView: View {
 
 struct VideoView: View {
     var body: some View {
-        Text("Video Library")
-            .font(.largeTitle)
+        VStack {
+            Text("Workout Videos")
+                .font(.largeTitle)
+                .bold()
+            
+            VideoPlayer(player: AVPlayer(
+                url: URL(string: ".mp4")!
+            ))
+            .frame(height: 250)
+            .cornerRadius(12)
+            
+            Spacer()
+        }
+        .padding()
     }
 }
