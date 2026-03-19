@@ -1,0 +1,33 @@
+//
+//  VideosTab.swift
+//  Fitness App
+//
+//  Created by Daisy on 3/19/26.
+//
+
+import SwiftUI
+
+struct HomeView: View {
+    var body: some View {
+        NavigationView {
+            VStack {
+                NavigationLink(destination: VideoView()) {
+                    Text("Workout Videos")
+                        .font(.headline)
+                        .padding()
+                        .frame(width: 220, height: 50)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+            }
+        }
+    }
+}
+
+struct VideoView: View {
+    var body: some View {
+        Text("Video Library")
+            .font(.largeTitle)
+    }
+}
