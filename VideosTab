@@ -8,6 +8,7 @@
 import SwiftUI
 import AVKit
 
+//defines ui for button
 struct HomeView: View {
     var body: some View {
         NavigationView {
@@ -26,6 +27,7 @@ struct HomeView: View {
     }
 }
 
+//displays workout videos on page
 struct VideoView: View {
     var body: some View {
         VStack {
